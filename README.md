@@ -6,7 +6,8 @@
 A tiny, dependency-free web app that renders a 9x9 Sudoku board from a JSON-style input. Open `index.html` in your browser, paste or edit a 9x9 array of strings in the textarea, and click "Update board" to redraw the grid.
 
 ## Intended use case
-<img width="2481" height="1372" alt="image" src="https://github.com/user-attachments/assets/0b1156d9-813f-4368-9cb1-a0e813f1b22a" />
+
+![alt text](demo.png)
 
 ## Features
 
@@ -14,6 +15,7 @@ A tiny, dependency-free web app that renders a 9x9 Sudoku board from a JSON-styl
 - Empty cells are represented by `.` in the input and shown as blank cells in the UI.
 - Simple, copy-paste-friendly input format (JSON array of arrays of strings).
 - No build step or server required — just open the file locally.
+- Validity checker: the app now runs a translated version of the "Valid Sudoku" algorithm (translated from my own solution on Neetcode) on the board and displays a live validity indicator (True / False) below the board.
 
 ## Files
 
@@ -58,6 +60,17 @@ Or, if you use VS Code, install the "Live Server" extension and click "Open with
 - The page attempts to clean simple formatting issues (extra spaces, trailing commas before `]`) before parsing.
 - If JSON.parse fails, an alert is shown: "Invalid board format. Please check your input." Check the browser console for details.
 - The app does not currently validate full 9x9 constraints (it assumes the input is a 9x9 array). Malformed sizes or non-string values may render incorrectly or throw parsing errors.
+
+Validation details
+
+- The app now runs a validity check on the provided board using the same approach as my own Neetcode "Valid Sudoku" solution translated from Python to JavaScript. It checks for duplicate digits (ignoring `.` empty cells) in each row, each column, and each 3x3 sub-box.
+- The result is shown in the UI under the board as "Valid: True" or "Valid: False" and is styled with `.valid` (green) or `.invalid` (red) CSS classes.
+- This validity checker only verifies that the currently entered digits don't break Sudoku rules; it does not attempt to solve the board or enforce that the input is exactly 9x9. For best results provide a 9x9 array of strings (digits "1".."9" or ".").
+
+Notes
+
+- The input cleaning in the app tries to be forgiving about whitespace and trailing commas and will convert single quotes to double quotes before parsing (so Python-style literals will usually work). However, if parsing fails you'll still get the "Invalid board format" alert.
+- The validity indicator is computed after the board is parsed and the grid is redrawn, so editing the textarea and clicking "Update board" will refresh both the rendered board and the validity state.
 
 ## Implementation notes
 

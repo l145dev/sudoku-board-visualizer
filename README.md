@@ -5,6 +5,9 @@
 
 A tiny, dependency-free web app that renders a 9x9 Sudoku board from a JSON-style input. Open `index.html` in your browser, paste or edit a 9x9 array of strings in the textarea, and click "Update board" to redraw the grid.
 
+## Intended use case
+<img width="2477" height="1378" alt="image" src="https://github.com/user-attachments/assets/57a38717-79f7-4be3-b264-97e83a4e01fd" />
+
 ## Features
 
 - Renders a 9x9 Sudoku board using plain HTML/CSS/JavaScript.

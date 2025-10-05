@@ -30,6 +30,8 @@
 
       .boards-wrapper {
         display: flex;
+        flex-direction: column;
+        gap: 2rem;
         flex: 1;
         justify-content: center;
         align-items: center;
@@ -95,6 +97,21 @@
       a:active {
         color: #ededed;
       }
+
+      .valid {
+        color: green;
+      }
+      .invalid {
+        color: red;
+      }
+
+      .caption {
+        font-size: 8px;
+      }
+
+      .board_validity {
+        text-align: center;
+      }
     </style>
   </head>
   <body>
@@ -104,23 +121,32 @@
         [...], [...], [...]] format:</label
       >
       <textarea name="user_board" id="user_board">
-[
-  ["1", "2", ".", ".", "3", ".", ".", ".", "."],
-  ["4", ".", ".", "5", ".", ".", ".", ".", "."],
-  [".", "9", "1", ".", ".", ".", ".", ".", "3"],
-  ["5", ".", ".", ".", "6", ".", ".", ".", "4"],
-  [".", ".", ".", "8", ".", "3", ".", ".", "5"],
-  ["7", ".", ".", ".", "2", ".", ".", ".", "6"],
-  [".", ".", ".", ".", ".", ".", "2", ".", "."],
-  [".", ".", ".", "4", "1", "9", ".", ".", "8"],
-  [".", ".", ".", ".", "8", ".", ".", "7", "9"]
-]</textarea
+[["1","2",".",".","3",".",".",".","."],
+["4",".",".","5",".",".",".",".","."],
+[".","9","8",".",".",".",".",".","3"],
+["5",".",".",".","6",".",".",".","4"],
+[".",".",".","8",".","3",".",".","5"],
+["7",".",".",".","2",".",".",".","6"],
+[".",".",".",".",".",".","2",".","."],
+[".",".",".","4","1","9",".",".","8"],
+[".",".",".",".","8",".",".","7","9"]]
+        </textarea
       >
       <button id="update_board" type="submit">Update board</button>
     </div>
 
     <div class="boards-wrapper">
       <div class="boards"></div>
+
+      <div class="board_validity">
+        <p>Valid: <span id="is_valid_board"></span></p>
+        <p class="caption">
+          * Validity algorithm translated from Python after solving
+          <a href="https://neetcode.io/problems/valid-sudoku?list=neetcode150"
+            >Valid Sudoku (Neetcode)</a
+          >
+        </p>
+      </div>
     </div>
 
     <div class="credits">
@@ -137,6 +163,7 @@
       const board_html = document.querySelector(".boards");
       const user_board = document.getElementById("user_board");
       const update_board = document.getElementById("update_board");
+      const is_valid_board = document.getElementById("is_valid_board");
 
       let board = JSON.parse(user_board.value);
 
@@ -148,7 +175,7 @@
         return val;
       };
 
-      const createBoard = () => {
+      const createBoard = (board) => {
         // there are 9 sub boards in the full sudoku board
 
         for (let i = 0; i < 9; i++) {
@@ -178,8 +205,93 @@
         }
       };
 
+      function isValidSudoku(board) {
+        // get rows and columns
+        let rows = board.slice(); // shallow copy
+        let cols = Array.from({ length: 9 }, () => []);
+
+        // append columns
+        for (let row of rows) {
+          row.forEach((num, j) => {
+            cols[j].push(num);
+          });
+        }
+
+        // validate rows and cols
+        for (let i = 0; i < rows.length; i++) {
+          let row = rows[i];
+          let col = cols[i];
+
+          let found_num_row = new Set();
+          let found_num_col = new Set();
+
+          for (let j = 0; j < row.length; j++) {
+            let num_row = row[j];
+            let num_col = col[j];
+
+            // for row
+            if (num_row !== ".") {
+              if (found_num_row.has(num_row)) return false;
+              found_num_row.add(num_row);
+            }
+
+            // for col
+            if (num_col !== ".") {
+              if (found_num_col.has(num_col)) return false;
+              found_num_col.add(num_col);
+            }
+          }
+        }
+
+        // validate 3x3 boxes
+        let boxes = {};
+        for (let i = 0; i < 9; i++) {
+          boxes[i] = [];
+        }
+
+        let box_start_index = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+          let row = rows[i];
+
+          if (i % 3 === 0 && i !== 0) {
+            box_start_index = i;
+          }
+
+          let box_index = box_start_index;
+
+          for (let j = 0; j < row.length; j++) {
+            let num = row[j];
+
+            if (j % 3 === 0 && j !== 0) {
+              box_index += 1;
+            }
+
+            if (num !== ".") {
+              boxes[box_index].push(num);
+            }
+          }
+        }
+
+        // validate the boxes
+        for (let boxKey in boxes) {
+          let found_nums = new Set();
+          for (let num of boxes[boxKey]) {
+            if (found_nums.has(num)) return false;
+            found_nums.add(num);
+          }
+        }
+
+        return true;
+      }
+
       // initial render with default board
-      createBoard();
+      createBoard(board);
+
+      let isValid = isValidSudoku(board);
+
+      is_valid_board.className = isValid ? "valid" : "invalid";
+      is_valid_board.innerHTML = isValid ? "True" : "False";
 
       // user inputs custom board
       update_board.addEventListener("click", () => {
@@ -196,7 +308,12 @@
 
           // Clear old board and redraw
           board_html.innerHTML = "";
-          createBoard();
+          createBoard(board);
+
+          isValid = isValidSudoku(board);
+
+          is_valid_board.className = isValid ? "valid" : "invalid";
+          is_valid_board.innerHTML = isValid ? "True" : "False";
         } catch (err) {
           alert("Invalid board format. Please check your input.");
           console.error(err);

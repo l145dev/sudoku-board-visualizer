@@ -100,7 +100,7 @@
   <body>
     <div class="inputs">
       <label for="user_board"
-        >Your 9x9 sudoku board in [[len(9)], [...], [...], [...], [...], [...],
+        >Your 9x9 sudoku board in [[row], [...], [...], [...], [...], [...],
         [...], [...], [...]] format:</label
       >
       <textarea name="user_board" id="user_board">
@@ -148,39 +148,34 @@
         return val;
       };
 
-      const createRowData = (row, val) => {
-        const row_data1 = document.createElement("td");
-        row_data1.innerHTML = displayVal(val[0]);
-        row.appendChild(row_data1);
-
-        const row_data2 = document.createElement("td");
-        row_data2.innerHTML = displayVal(val[1]);
-        row.appendChild(row_data2);
-
-        const row_data3 = document.createElement("td");
-        row_data3.innerHTML = displayVal(val[2]);
-        row.appendChild(row_data3);
-      };
-
       const createBoard = () => {
-        board.forEach((board_set) => {
-          const nine_by_nine = document.createElement("table");
+        // there are 9 sub boards in the full sudoku board
 
-          const row1 = document.createElement("tr");
-          nine_by_nine.appendChild(row1);
+        for (let i = 0; i < 9; i++) {
+          const sub_board = document.createElement("table");
 
-          const row2 = document.createElement("tr");
-          nine_by_nine.appendChild(row2);
+          const startRow = Math.floor(i / 3) * 3;
+          const startCol = (i % 3) * 3;
 
-          const row3 = document.createElement("tr");
-          nine_by_nine.appendChild(row3);
+          // sub board creation
+          for (let j = 0; j < 3; j++) {
+            const sub_board_row = document.createElement("tr");
 
-          createRowData(row1, [board_set[0], board_set[1], board_set[2]]);
-          createRowData(row2, [board_set[3], board_set[4], board_set[5]]);
-          createRowData(row3, [board_set[6], board_set[7], board_set[8]]);
+            for (let k = 0; k < 3; k++) {
+              const sub_board_data = document.createElement("td");
 
-          board_html.appendChild(nine_by_nine);
-        });
+              sub_board_data.innerHTML = displayVal(
+                board[startRow + j][startCol + k]
+              );
+
+              sub_board_row.appendChild(sub_board_data);
+            }
+
+            sub_board.append(sub_board_row);
+          }
+
+          board_html.appendChild(sub_board);
+        }
       };
 
       // initial render with default board
@@ -193,6 +188,7 @@
           let cleaned = user_board.value
             .replace(/,\s*\]/g, "]") // remove trailing commas before ]
             .replace(/\s+/g, " ") // collapse spaces/newlines/tabs
+            .replace(/'/g, '"') // allow single quotes
             .trim();
 
           // Parse to actual array
